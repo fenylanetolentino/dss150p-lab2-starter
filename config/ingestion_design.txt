@@ -1,0 +1,7 @@
+Task 2.4: PostgreSQL Incremental State
+A viable CDC strategy for PostgreSQL involves tracking the max(resolved_at) or max(opened_at) timestamp to only extract newly updated tickets incrementally.
+
+Task 2.5: Watermark Semantics
+If the watermark saves before the raw file writes, a pipeline crash causes data loss on the next run because the pipeline assumes the data was successfully ingested. 
+Limitation: If multiple source records share the exact same timestamp, an updated_after > watermark query might skip concurrent records. 
+Mitigation: Use >= with secondary deduplication, or track an auto-incrementing transactional ID instead of time.

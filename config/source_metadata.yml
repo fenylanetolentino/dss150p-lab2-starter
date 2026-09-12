@@ -1,0 +1,50 @@
+sources:
+  - name: customers
+    owner: data_eng_team@company.com
+    source_type: CSV
+    location: data/customers.csv
+    description: Customer demographic and signup data
+    record_count: 250
+    candidate_key: customer_id
+    known_quality_issues: 2 exact duplicate rows, 3 duplicate customer_ids, missing emails
+    acquisition_method: File copy + manifest
+
+  - name: orders
+    owner: sales_ops@company.com
+    source_type: JSON
+    location: data/orders.json
+    description: Order transactions with nested shipping details
+    record_count: 250
+    candidate_key: order_id
+    known_quality_issues: Nested shipping object needs downstream handling
+    acquisition_method: File copy + manifest
+
+  - name: products
+    owner: inventory_team@company.com
+    source_type: Parquet
+    location: data/products.parquet
+    description: Product catalog with strict data types
+    record_count: 200
+    candidate_key: product_id
+    known_quality_issues: None identified during profiling
+    acquisition_method: File copy + manifest
+
+  - name: api_events
+    owner: platform_engineering@company.com
+    source_type: REST API
+    location: http://127.0.0.1:8000/api/events
+    description: Paginated API for system events
+    record_count: Unknown (Paginated)
+    candidate_key: event_id
+    known_quality_issues: Repeats event_ids with newer timestamps
+    acquisition_method: Paginated GET with updated_after watermark
+
+  - name: support_tickets
+    owner: support_team@company.com
+    source_type: PostgreSQL
+    location: dss150p database
+    description: Customer support ticket tracking
+    record_count: 250
+    candidate_key: ticket_id
+    known_quality_issues: 4 records have a null assigned_agent
+    acquisition_method: Inspection only

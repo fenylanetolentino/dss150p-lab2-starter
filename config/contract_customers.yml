@@ -1,0 +1,23 @@
+dataset_name: customers
+owner: data_eng_team@company.com
+service_level_agreement:
+  update_frequency: daily
+  freshness_guarantee: 24 hours
+schema:
+  - column: customer_id
+    type: VARCHAR
+    is_primary_key: true
+    nullable: false
+  - column: first_name
+    type: VARCHAR
+    nullable: false
+  - column: email
+    type: VARCHAR
+    nullable: false
+    format: email
+data_quality_rules:
+  - rule_type: strict_unique
+    columns: [customer_id]
+  - rule_type: no_nulls
+    columns: [email]
+    action: quarantine_record
