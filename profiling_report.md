@@ -1,0 +1,7 @@
+# Source Profiling Report
+
+* **customers.csv:** 250 rows. Logical types: integer (customer_id), string (name, email), timestamp (signup_date). Missing values: 3 null emails. Duplicates: 2 exact duplicate rows, 3 reused `customer_id` values. Validation rules: `customer_id` must be unique, `email` must not be null, `signup_date` must be valid ISO8601.
+* **orders.json:** 250 records. Root is a list of records. Nested field: `shipping` object. Timestamps: `order_date`. Numeric fields: `total_amount`. The nested `shipping` object could be flattened into columns (e.g., `shipping_region`) or stored natively as a JSONB column downstream.
+* **products.parquet:** 200 rows. Schema is strictly typed natively compared to CSV/JSON text. File size is significantly smaller than equivalent CSV/JSON formats. Parquet is less common as an operational source format because transactional systems require row-based fast writes (OLTP), whereas Parquet is a columnar format optimized for analytical read-heavy workloads (OLAP).
+* **REST API:** Paginated fields identified: `page`, `per_page`, `total`, `has_more`, `next_page`, `items`. Event fields inspected. Processing only page 1 would be incomplete because `has_more` indicates subsequent pages containing the remaining records must be fetched iteratively.
+* **PostgreSQL (support_tickets):** 250 rows. Bounded queries executed cleanly. Discovered 4 records where `assigned_agent` IS NULL.

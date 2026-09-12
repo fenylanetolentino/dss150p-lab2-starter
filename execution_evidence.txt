@@ -1,0 +1,74 @@
+1. PostgreSQL Inspection
+Purpose: Proves safe, bounded database connection and identifies table schema, data types, and row constraints without running unbounded queries that could degrade the operational database.
+
+ ticket_id | customer_id | category  | priority | assigned_agent |      opened_at      |  
+   resolved_at     |   status   
+-----------+-------------+-----------+----------+----------------+---------------------+--
+-------------------+-------------
+         1 | C0246       | Technical | High     | J. Reyes       | 2026-06-19 04:00:00 | 2
+026-06-21 13:00:00 | Resolved
+         2 | C0130       | Product   | Medium   | J. Reyes       | 2026-05-26 07:00:00 | 2
+026-05-26 23:00:00 | Closed
+         3 | C0094       | Delivery  | Medium   | J. Reyes       | 2026-03-28 09:00:00 | 2
+026-03-31 17:00:00 | Closed
+         4 | C0057       | Technical | High     | L. Tan         | 2026-04-25 19:00:00 |  
+          5 | C0120       | Delivery  | High     | R. Cruz        | 2026-01-20 02:00:00 | 2
+026-01-22 21:00:00 | Resolved
+         6 | C0211       | Product   | Medium   | P. Lim         | 2026-02-26 13:00:00 |  
+                   | Open
+         7 | C0041       | Delivery  | Low      | P. Lim         | 2026-03-11 23:00:00 |  
+                   | Open
+         8 | C0040       | Billing   | Low      | L. Tan         | 2026-02-14 05:00:00 | 2
+026-02-16 08:00:00 | Resolved
+         9 | C0155       | Technical | Low      | R. Cruz        | 2026-02-09 04:00:00 | 2
+026-02-11 08:00:00 | Resolved
+        10 | C0094       | Account   | Low      | J. Reyes       | 2026-04-12 19:00:00 |  
+
+
+2. API Pagination
+Purpose: Demonstrates the API's pagination structure ('has_more', 'next_page') and nested metadata, proving the necessity of building an iterative extraction loop rather than a single static request.
+
+API: http://127.0.0.1:8000/api/events?page=1&per_page=20"
+'page': 1, 'per_page': 10, 'total': 122, 'has_more': True, 'next_page': 2,
+ 'items': [{'event_id': 'E0001', 'customer_id': 'C0024', 'event_type': 'page_view', 'amount': 4210.54, 'updated_at': '2026-08-01T11:00:00', 'metadata': {'channel': 'partner', 'campaign': 'none'}}, {'event_id': 'E0002', 'customer_id': 'C0008', 'event_type': 'support',
+ 'amount': 4882.46, 'updated_at': '2026-08-01T14:00:00', 'metadata': {'channel': 'mobile', 'campaign': 'retarget'}}, {'event_id': 'E0003', 'customer_id': 'C0061', 'event_type': 'page_view', 'amount': 3875.23, 'updated_at': '2026-08-01T17:00:00', 'metadata': {'channel'
+ : 'mobile', 'campaign': 'retarget'}}, {'event_id': 'E0004', 'customer_id': 'C0025', 'event_type': 'add_to_cart', 'amount': 587.17, 'updated_at': '2026-08-01T20:00:00', 'metadata': {'channel': 'partner', 'campaign': 'retarget'}}, {'event_id': 'E0005', 'customer_id': 'C0230',
+'event_type': 'checkout', 'amount': 2860.24, 'updated_at': '2026-08-01T23:00:00', 'metadata': {'channel': 'partner', 'campaign': 'launch'}}, {'event_id': 'E0006', 'customer_id': 'C0114', 'event_type': 'add_to_cart', 'amount': 2464.12, 'updated_at': '2026-08-02T02:00:00', 'metadata':
+ {'channel': 'web', 'campaign': 'launch'}}, {'event_id': 'E0007', 'customer_id': 'C0241', 'event_type': 'page_view', 'amount': 2271.8, 'updated_at': '2026-08-02T05:00:00', 'metadata': {'channel': 'mobile', 'campaign': 'launch'}}, {'event_id': 'E0008', 'customer_id': 'C0157', 'event_type': 
+ 'add_to_cart', 'amount': 593.1, 'updated_at': '2026-08-02T08:00:00', 'metadata': {'channel': 'mobile', 'campaign': 'retarget'}}, {'event_id': 'E0009', 'customer_id': 'C0036', 'event_type': 'payment', 'amount': 2565.98, 'updated_at': '2026-08-02T11:00:00', 'metadata': {'channel': 'mobile', 
+ 'campaign': 'none'}}, {'event_id': 'E0010', 'customer_id': 'C0161', 'event_type': 'payment', 'amount': 1409.98, 'updated_at': '2026-08-02T14:00:00', 'metadata': {'channel': 'mobile', 'campaign': 'launch'}}]
+
+
+3. First Ingestion Run
+Purpose: Confirms the initial successful extraction of static files and API records, validating the core data movement logic and the initialization of the state-tracking watermark.
+
+--- TASK 3.1: RAW FILE INGESTION ---
+Ingested customers.csv
+Ingested orders.json
+Ingested products.parquet
+--- TASKS 3.2-3.7: API INGESTION & LOGGING ---
+C:\Users\fenyl\dss150p-lab2-starter\src\ingest_api.py:50: Pandas4Warning: The default 'epoch' date format is deprecated and will be removed in a future version, please use 'iso' date format instead.
+  df.to_json('raw/api/events.jsonl', orient='records', lines=True)
+Watermark advanced.
+Run logged to outputs/pipeline_run_log.csv. Status: SUCCESS
+
+
+4. Idempotent Rerun
+Purpose: Proves the pipeline state (file hashes and API watermark) securely prevents duplicate processing and data multiplication when executed multiple times against unchanged source data.
+
+--- TASK 3.1: RAW FILE INGESTION ---
+Skipping customers.csv: Hash 4229a20fde8733740f6d9a4c4bc49029dec0a36c96fce4efc2b50e14e0c2c80b already ingested.
+Skipping orders.json: Hash 5d9aa263ea52f292c1c5fc46bc5ca2a7461144613d10edf835d7ba2e271aeb1a already ingested.
+Skipping products.parquet: Hash cf3b6afd1eea6c5c53a1f60e8e0e9f17dddef19ea5c8e57df10350ad9de93fc7 already ingested.
+
+
+5. Failure and Recovery
+Purpose: Demonstrates that a source connection crash fails and logs the error without advancing the watermark, preventing data loss during the subsequent successful recovery run.
+
+--- TASKS 3.2-3.7: API INGESTION & LOGGING ---
+Pipeline failed safely: HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/events?page=1&per_page=50&updated_after=2026-08-21T10%3A00%3A00 (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+Run logged to outputs/pipeline_run_log.csv. Status: FAILED
+
+--- TASKS 3.2-3.7: API INGESTION & LOGGING ---
+No new records to ingest.
+Run logged to outputs/pipeline_run_log.csv. Status: SUCCESS
